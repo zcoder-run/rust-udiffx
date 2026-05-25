@@ -15,7 +15,7 @@ fn test_changes_no_changes() -> Result<()> {
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert!(
@@ -74,7 +74,7 @@ The current implementation provides a solid foundation for a button explosion ef
 "###;
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert_eq!(status.items.len(), 1, "Should have 1 directive status");
@@ -132,7 +132,7 @@ bind K send-keys -t 2 "clear" Enter "\\" Enter C-l \; send-keys -t 3 "clear" Ent
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert_eq!(status.items.len(), 1, "Should have 1 directive status");
@@ -166,7 +166,7 @@ beta
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert_eq!(status.items.len(), 1, "Should have 1 directive status");
@@ -196,7 +196,7 @@ line-1
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert_eq!(status.items.len(), 1, "Should have 1 directive status");
@@ -226,7 +226,7 @@ fn test_changes_append_empty_is_no_change() -> Result<()> {
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	assert_eq!(status.items.len(), 1, "Should have 1 directive status");
@@ -248,7 +248,7 @@ fn test_changes_simple() -> Result<()> {
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	let len = status.items.len();
@@ -267,7 +267,7 @@ fn test_changes_no_head_nums() -> Result<()> {
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir, changes)?;
+	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
 	let len = status.items.len();
@@ -293,7 +293,7 @@ fn test_changes_with_code_fence() -> Result<()> {
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
-	let status = apply_file_changes(&base_dir_spath, changes)?;
+	let status = apply_file_changes(&base_dir_spath, changes, None)?;
 
 	// -- Check
 	let len = status.items.len();

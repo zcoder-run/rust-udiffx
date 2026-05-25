@@ -1,27 +1,42 @@
-use crate::{Error, Result};
+use crate::{Error, Result, SecurityPolicy};
 use simple_fs::SPath;
 
 /// Checks if the target path is safe to write, ensuring it remains within the base directory.
-pub fn check_for_write(target: &SPath, base_dir: &SPath) -> Result<()> {
-	check_in_base(target, base_dir)
+pub fn check_for_write(target: &SPath, base_dir: &SPath, policy: Option<&SecurityPolicy>) -> Result<()> {
+	if let Some(policy) = policy
+		&& policy.bypass_all_checks
+	{
+		return Ok(());
+	}
+	if is_under_dir(target, base_dir) {
+		return Ok(());
+	}
+	if let Some(policy) = policy {
+		for dir in &policy.writable_dirs {
+			if is_under_dir(target, dir) {
+				return Ok(());
+			}
+		}
+	}
+	Err(Error::security_violation(target.to_string(), base_dir.to_string()))
 }
 
 /// Checks if the target path is safe to read, ensuring it remains within the base directory.
-pub fn check_for_read(target: &SPath, base_dir: &SPath) -> Result<()> {
-	check_in_base(target, base_dir)
+pub fn check_for_read(target: &SPath, base_dir: &SPath, policy: Option<&SecurityPolicy>) -> Result<()> {
+	if let Some(policy) = policy
+		&& (policy.read_anywhere || policy.bypass_all_checks)
+	{
+		return Ok(());
+	}
+	check_for_write(target, base_dir, policy)
 }
 
 // region:    --- Support
 
-fn check_in_base(target: &SPath, base_dir: &SPath) -> Result<()> {
-	let base_dir = base_dir.clone().into_collapsed();
+fn is_under_dir(target: &SPath, dir: &SPath) -> bool {
+	let dir = dir.clone().into_collapsed();
 	let target = target.clone().into_collapsed();
-
-	if !target.as_str().starts_with(base_dir.as_str()) {
-		return Err(Error::security_violation(target.to_string(), base_dir.to_string()));
-	}
-
-	Ok(())
+	target.as_str().starts_with(dir.as_str())
 }
 
 // endregion: --- Support

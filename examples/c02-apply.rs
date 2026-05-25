@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 	println!("Found {len} directives in {FILE}",);
 
 	// -- Apply
-	let status = apply_file_changes(&base_dir, file_changes)?;
+	let status = apply_file_changes(&base_dir, file_changes, None)?;
 
 	// -- Print Result
 	println!("\nApplied changes to: {base_dir}");

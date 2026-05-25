@@ -1,6 +1,6 @@
 use crate::{
-	ApplyChangesStatus, DirectiveStatus, Error, FileChanges, FileDirective, HunkError, MatchTier, Result, fs_guard,
-	patch_completer,
+	ApplyChangesStatus, DirectiveStatus, Error, FileChanges, FileDirective, HunkError, MatchTier, Result,
+	SecurityPolicy, fs_guard, patch_completer,
 };
 use diffy::{Patch, apply as diffy_apply};
 use simple_fs::{SPath, ensure_file_dir, read_to_string, safer_trash_dir, safer_trash_file};
@@ -17,7 +17,23 @@ pub struct ApplyPatchIncrementalData {
 }
 
 /// Executes the file changes defined in `AipFileChanges` relative to `base_dir`.
-pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges) -> Result<ApplyChangesStatus> {
+///
+/// # Security Policy
+///
+/// Any type that converts into `SecurityPolicy` can be passed, including `None`
+/// (via `Option<SecurityPolicy>`), which yields the default strict policy:
+///
+/// - Writes are allowed only inside `base_dir`.
+/// - Reads are also confined to `base_dir` (equivalent to `SecurityPolicy::default()`).
+/// - No path-check bypasses are active.
+///
+/// Provide an explicit `SecurityPolicy` to relax these restrictions
+/// (e.g. allow reading from anywhere or writing to additional directories).
+pub fn apply_file_changes(
+	base_dir: impl Into<SPath>,
+	file_changes: FileChanges,
+	security_policy: impl Into<SecurityPolicy>,
+) -> Result<ApplyChangesStatus> {
 	let base_dir = base_dir.into();
 	// -- Safety check: base_dir must be within CWD
 	let cwd = std::env::current_dir().map_err(|err| Error::io_read_file(".", err))?;
@@ -33,6 +49,9 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 		return Err(Error::security_violation(base_dir.to_string(), cwd_spath.to_string()));
 	}
 
+	let policy: SecurityPolicy = security_policy.into();
+	let policy_ref = Some(&policy);
+
 	let mut items = Vec::new();
 
 	for directive in file_changes {
@@ -42,7 +61,7 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 			match directive {
 				FileDirective::New { file_path, content } => {
 					let full_path = base_dir.join(&file_path);
-					fs_guard::check_for_write(&full_path, &base_dir)?;
+					fs_guard::check_for_write(&full_path, &base_dir, policy_ref)?;
 
 					ensure_file_dir(&full_path).map_err(Error::simple_fs)?;
 
@@ -64,8 +83,8 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 					content: patch_content,
 				} => {
 					let full_path = base_dir.join(&file_path);
-					fs_guard::check_for_read(&full_path, &base_dir)?;
-					fs_guard::check_for_write(&full_path, &base_dir)?;
+					fs_guard::check_for_read(&full_path, &base_dir, policy_ref)?;
+					fs_guard::check_for_write(&full_path, &base_dir, policy_ref)?;
 
 					let original_content = if full_path.exists() {
 						read_to_string(&full_path).map_err(Error::simple_fs)?
@@ -100,7 +119,7 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 
 				FileDirective::Append { file_path, content } => {
 					let full_path = base_dir.join(&file_path);
-					fs_guard::check_for_write(&full_path, &base_dir)?;
+					fs_guard::check_for_write(&full_path, &base_dir, policy_ref)?;
 
 					if content.content.is_empty() {
 						return Err(Error::apply_no_changes(file_path));
@@ -123,8 +142,8 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 					let full_from = base_dir.join(&from_path);
 					let full_to = base_dir.join(&to_path);
 
-					fs_guard::check_for_read(&full_from, &base_dir)?;
-					fs_guard::check_for_write(&full_to, &base_dir)?;
+					fs_guard::check_for_read(&full_from, &base_dir, policy_ref)?;
+					fs_guard::check_for_write(&full_to, &base_dir, policy_ref)?;
 
 					if full_from.exists() {
 						if full_from.is_dir() {
@@ -146,8 +165,8 @@ pub fn apply_file_changes(base_dir: impl Into<SPath>, file_changes: FileChanges)
 					let full_from = base_dir.join(&from_path);
 					let full_to = base_dir.join(&to_path);
 
-					fs_guard::check_for_read(&full_from, &base_dir)?;
-					fs_guard::check_for_write(&full_to, &base_dir)?;
+					fs_guard::check_for_read(&full_from, &base_dir, policy_ref)?;
+					fs_guard::check_for_write(&full_to, &base_dir, policy_ref)?;
 
 					if full_from.exists() {
 						ensure_file_dir(&full_to).map_err(Error::simple_fs)?;

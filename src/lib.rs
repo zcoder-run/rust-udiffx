@@ -10,6 +10,9 @@ mod file_changes;
 mod file_directives;
 mod files_context;
 mod patch_completer;
+mod security_policy;
+
+pub use security_policy::SecurityPolicy;
 
 pub use applier::{ApplyPatchIncrementalData, apply_file_changes};
 pub use apply_changes_status::*;
