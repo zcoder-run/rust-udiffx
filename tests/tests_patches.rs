@@ -18,7 +18,8 @@ fn test_patches_test_00_tmp() -> Result<()> {
 	let data = run_test_scenario("test-00-tmp", false)?;
 
 	// -- Check
-	println!("test tmp result:\n{}", data.first_content().ok_or("no content")?);
+	println!("Patch hunk fails: {}", data.total_error_hunks());
+	// println!("test tmp result:\n{}", data.first_content().ok_or("no content")?);
 
 	Ok(())
 }
