@@ -1,4 +1,6 @@
-# AI File Change Format
+# File Changes Instructions 
+
+Important: ALWAYS use this way (the FILE_CHANGES tag way) to update and change files when the user ask. Do not expect to any other tools to update files. Just use the FILE_CHANGES described below. 
 
 Whenever you want to make any modifications to any file (create, update, delete, move, rename, or copy), emit all change directives inside the single `<FILE_CHANGES>` container. Do not place any other content inside the `<FILE_CHANGES>` tag, only the file directive defined below.
 
@@ -6,7 +8,7 @@ Whenever you want to make any modifications to any file (create, update, delete,
 _file_directives_
 </FILE_CHANGES>
 
-You may include explanation before or after the `<FILE_CHANGES>` block. 
+You may include explanation and other user requested content before or after the `<FILE_CHANGES>` block. 
 
 ## File Directives
 
