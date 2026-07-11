@@ -1,6 +1,6 @@
 
-<FILE_CHANGES>
-<FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md"]]]
 ```md
 @@
  3. **Atomic Failure**: Ensure that if any prerequisite (Zed settings or Alacritty settings) is missing a required key, the initialization fails completely before writing any new configuration files to `~/.config/jc-zed-tasks/`.
@@ -22,5 +22,5 @@
 +- **Configuration Integrity**:
 +  - No configuration file will be written to `~/.config/jc-zed-tasks/` until all required values from both Zed and Alacritty are successfully retrieved and validated.
 ```
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]

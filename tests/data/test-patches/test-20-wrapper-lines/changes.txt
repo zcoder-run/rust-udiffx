@@ -1,6 +1,6 @@
-<TEST_FILE_CHANGES>
+[[[TEST_FILE_CHANGES]]]
 
-<TEST_FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md">
+[[[TEST_FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md"]]]
 ````md
 @@
  - Resolves `spec.path` from config as either a spec directory or a spec file path.
@@ -9,6 +9,6 @@
 +- When `dev.spec` is enabled with the default path, the default spec file is `$coder_prompt_dir/dev/spec/spec.md`.
 *** End Patch
 ````
-</TEST_FILE_PATCH>
+[[[/TEST_FILE_PATCH]]]
 
-</TEST_FILE_CHANGES>
+[[[/TEST_FILE_CHANGES]]]

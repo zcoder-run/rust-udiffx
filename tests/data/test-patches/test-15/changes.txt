@@ -1,11 +1,11 @@
-<FILE_CHANGES>
-<FILE_PATCH file_path="">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path=""]]]
 @@
- 		<property>
- 			<param name="outputMeshes">1</param>
---			<param name="predictLabels">0</param>
---			<param name="allFrames">1</param>
--+			<param name="outputLabelmap">0</param>
-</FILE_PATCH>
-</FILE_CHANGES>
+ 		[[[property]]]
+ 			[[[param name="outputMeshes"]]]1[[[/param]]]
+--			[[[param name="predictLabels"]]]0[[[/param]]]
+--			[[[param name="allFrames"]]]1[[[/param]]]
+-+			[[[param name="outputLabelmap"]]]0[[[/param]]]
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 

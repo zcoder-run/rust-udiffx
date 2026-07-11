@@ -9,19 +9,19 @@ use std::fs::{self, OpenOptions, metadata};
 
 #[derive(Deserialize)]
 struct ProfilesConfig {
-	order: Vec<String>,
+	order: Vec[[[String]]],
 	#[serde(flatten)]
 	profiles: HashMap<String, Profile>,
 }
 
 #[derive(Deserialize)]
 struct Profile {
-	zed_config: Vec<ZedConfigEntry>,
+	zed_config: Vec[[[ZedConfigEntry]]],
 }
 
 #[derive(Deserialize)]
 struct ZedConfigEntry {
-	config_path: Vec<String>,
+	config_path: Vec[[[String]]],
 	value: serde_json::Value,
 }
 

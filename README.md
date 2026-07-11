@@ -14,19 +14,19 @@ When the LLM returns some text eventually `FILE_CHANGES` tag like :
 
 I fix the issue you reported. 
 
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_NEW file_path="src/hello.rs">
+[[[FILE_NEW file_path="src/hello.rs">
 pub fn hello() {
     println!("Hello from udiffx");
 }
-</FILE_NEW>
+[[[/FILE_NEW]]]
 
-<FILE_APPEND file_path="changelog.md">
+[[[FILE_APPEND file_path="changelog.md"]
 ## Next
 
 - Add a hello module.
-</FILE_APPEND>
+[[[/FILE_APPEND]]]
 
 <FILE_PATCH file_path="src/main.rs">
 @@
@@ -36,13 +36,13 @@ pub fn hello() {
 -    println!("Hello");
 +    hello::hello();
  }
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-<FILE_COPY from_path="docs/template.md" to_path="docs/getting-started.md" />
+[[[FILE_COPY from_path="docs/template.md" to_path="docs/getting-started.md" /]]]
 
-<FILE_RENAME from_path="src/old-name.rs" to_path="src/legacy-name.rs" />
+[[[FILE_RENAME from_path="src/old-name.rs" to_path="src/legacy-name.rs" /]]]
 
-<FILE_DELETE file_path="tmp/generated.txt" />
+[[[FILE_DELETE file_path="tmp/generated.txt" /]]]
 
 </FILE_CHANGES>
 
@@ -78,12 +78,12 @@ fn main() -> Result<()> {
 
 ## Directive Behavior
 
-- `<FILE_NEW file_path="..."> ... </FILE_NEW>` – creates or overwrites a file.
-- `<FILE_APPEND file_path="..."> ... </FILE_APPEND>` – appends content to the end of a file (creates if missing).
-- `<FILE_PATCH file_path="..."> ... </FILE_PATCH>` – modifies a file with one or more unified-diff hunks.
-- `<FILE_COPY from_path="..." to_path="..." />` – copies a file.
-- `<FILE_RENAME from_path="..." to_path="..." />` – renames or moves a file.
-- `<FILE_DELETE file_path="..." />` – deletes a file or directory recursively.
+- `[[[FILE_NEW file_path="..."]]] ... [[[/FILE_NEW]]]` – creates or overwrites a file.
+- `[[[FILE_APPEND file_path="..."]]] ... [[[/FILE_APPEND]]]` – appends content to the end of a file (creates if missing).
+- `[[[FILE_PATCH file_path="..."]]] ... [[[/FILE_PATCH]]]` – modifies a file with one or more unified-diff hunks.
+- `[[[FILE_COPY from_path="..." to_path="..." /]]]` – copies a file.
+- `[[[FILE_RENAME from_path="..." to_path="..." /]]]` – renames or moves a file.
+- `[[[FILE_DELETE file_path="..." /]]]` – deletes a file or directory recursively.
 
 All paths are relative to the base directory.
 

@@ -1,5 +1,5 @@
-<FILE_CHANGES>
-<FILE_PATCH file_path="pro/coder/lua/auto_context.lua">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="pro/coder/lua/auto_context.lua"]]]
 @@
  		aip.run.pin("helpers", 4, helpers_pin)
  		aip.task.pin("helpers", 4, helpers_pin)
@@ -33,6 +33,6 @@
  	pin_status                  = pin_status,
 +	sort_files_by_mtime         = sort_files_by_mtime,
  }
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-</FILE_CHANGES>
+[[[/UDIFFX_FILE_CHANGES]]]

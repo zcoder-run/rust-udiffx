@@ -52,8 +52,8 @@ The current implementation provides a solid foundation for a button explosion ef
 	std::fs::write(&original_file_path, initial_content)?;
 
 	let input = r###"
-<FILE_CHANGES>
-<FILE_PATCH file_path="original.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="original.md"]]]
 ```md
 @@
  - **Accessibility**: Add ARIA attributes to handle the temporary disappearance of the primary interaction element.
@@ -69,8 +69,8 @@ The current implementation provides a solid foundation for a button explosion ef
 +This modular structure follows modern development standards and leverages ES module capabilities.
 +
 ```
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 "###;
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
@@ -111,9 +111,9 @@ bind K send-keys -t 2 "clear" Enter "\\" Enter C-l \; send-keys -t 3 "clear" Ent
 	std::fs::write(&keys_conf_path, initial_content)?;
 
 	let input = r#"
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_PATCH file_path="keys.conf">
+[[[FILE_PATCH file_path="keys.conf"]]]
 ```conf
 @@
  ## Disabled for now, since tmux-plugins
@@ -125,9 +125,9 @@ bind K send-keys -t 2 "clear" Enter "\\" Enter C-l \; send-keys -t 3 "clear" Ent
 
  # Clear right panels
 ```
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-</FILE_CHANGES>
+[[[/UDIFFX_FILE_CHANGES]]]
 "#;
 
 	// -- Exec
@@ -157,11 +157,11 @@ fn test_changes_append_existing_file() -> Result<()> {
 	std::fs::write(&file_path, "alpha\n")?;
 
 	let input = r#"
-<FILE_CHANGES>
-<FILE_APPEND file_path="notes.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_APPEND file_path="notes.md"]]]
 beta
-</FILE_APPEND>
-</FILE_CHANGES>
+[[[/FILE_APPEND]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 "#;
 
 	// -- Exec
@@ -187,15 +187,16 @@ fn test_changes_append_creates_missing_file() -> Result<()> {
 	let base_dir = test_support::new_out_dir_path("test_changes_append_creates_missing_file")?;
 
 	let input = r#"
-<FILE_CHANGES>
-<FILE_APPEND file_path="logs/output.txt">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_APPEND file_path="logs/output.txt"]]]
 line-1
-</FILE_APPEND>
-</FILE_CHANGES>
+[[[/FILE_APPEND]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 "#;
 
 	// -- Exec
 	let (changes, _extruded) = extract_file_changes(input, false)?;
+
 	let status = apply_file_changes(&base_dir, changes, None)?;
 
 	// -- Check
@@ -219,9 +220,9 @@ fn test_changes_append_empty_is_no_change() -> Result<()> {
 	std::fs::write(&file_path, "seed")?;
 
 	let input = r#"
-<FILE_CHANGES>
-<FILE_APPEND file_path="empty.txt"></FILE_APPEND>
-</FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_APPEND file_path="empty.txt"]]][[[/FILE_APPEND]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 "#;
 
 	// -- Exec

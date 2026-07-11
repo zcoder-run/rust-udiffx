@@ -1,7 +1,7 @@
-<FILE_CHANGES>
-<FILE_PATCH file_path="original.txt">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="original.txt"]]]
 @@
 +
 +line 3
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]

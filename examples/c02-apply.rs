@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let md_content = read_to_string(FILE)?;
 	let file_changes = extract_file_changes(&md_content, false)?.0;
 	if file_changes.is_empty() {
-		println!("No <FILE_CHANGES> block found in '{FILE}'");
+		println!("No [[[UDIFFX_FILE_CHANGES]]] block found in '{FILE}'");
 		return Ok(());
 	}
 

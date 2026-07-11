@@ -15,20 +15,20 @@ When providing file context to an LLM, the following format is used by `load_fil
 
 - exactly one root container is expected when you intend to apply changes:
 
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 ... directives ...
 </FILE_CHANGES>
 
-Inside `<FILE_CHANGES>`, mix any number of directives:
+Inside `[[[UDIFFX_FILE_CHANGES]]]`, mix any number of directives:
 
-- `<FILE_NEW file_path="..."> ... </FILE_NEW>`
-- `<FILE_PATCH file_path="..."> ... </FILE_PATCH>` (Unified Diff or Simplified Patch content)
-- `<FILE_RENAME from_path="..." to_path="..." />`
-- `<FILE_DELETE file_path="..." />`
+- `[[[FILE_NEW file_path="..."]]]... [[[/FILE_NEW]]]`
+- `<FILE_PATCH file_path="..."> ... [[[/FILE_PATCH]]]` (Unified Diff or Simplified Patch content)
+- `[[[FILE_RENAME from_path="..." to_path="..." /]]]`
+- `[[[FILE_DELETE file_path="..." /]]]`
 
 Notes:
 - Tags are XML-like, not fully XML-compliant, content does not need XML escaping.
-- Self-closing tags like `<FILE_DELETE ... />` and `<FILE_RENAME ... />` are supported.
+- Self-closing tags like `[[[FILE_DELETE ... /]]]` and `[[[FILE_RENAME ... /]]]` are supported.
 - `FILE_PATCH` supports simplified hunk headers (`@@`) which automatically find context in the target file.
 
 ## Public API (Rust)
@@ -67,7 +67,7 @@ Signature:
 - `pub fn extract_file_changes(input: &str, extract_content: bool) -> Result<(FileChanges, Option<String>)>`
 
 Behavior:
-- Finds and parses the first `<FILE_CHANGES> ... </FILE_CHANGES>` block in `input`.
+- Finds and parses the first `[[[UDIFFX_FILE_CHANGES]]] ... </FILE_CHANGES>` block in `input`.
 - Returns:
   - `FileChanges` (possibly empty)
   - `extruded: Option<String>`
@@ -87,12 +87,12 @@ fn main() -> Result<()> {
     let input = r#"
 Some text...
 
-<FILE_CHANGES>
-<FILE_NEW file_path="src/hello.rs">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_NEW file_path="src/hello.rs">
 pub fn hello() { println!("Hello"); }
-</FILE_NEW>
+[[[/FILE_NEW]]]
 
-<FILE_DELETE file_path="old.txt" />
+[[[FILE_DELETE file_path="old.txt" /]]]
 </FILE_CHANGES>
 "#;
 
@@ -196,12 +196,12 @@ fn main() -> Result<()> {
     let base_dir = SPath::new("./my-project");
 
     let input = r#"
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 <FILE_PATCH file_path="src/main.rs">
 @@ -1,3 +1,3 @@
 -fn main() { println!("Hello"); }
 +fn main() { println!("Hello, world"); }
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 </FILE_CHANGES>
 "#;
 
@@ -276,10 +276,10 @@ Conversion: `Option<SecurityPolicy>` ⇒ `SecurityPolicy` via `From`, so `None` 
 
 ## Recommended LLM output patterns (strict)
 
-- Emit exactly one `<FILE_CHANGES>` block when output is meant to be applied.
+- Emit exactly one `[[[UDIFFX_FILE_CHANGES]]]` block when output is meant to be applied.
 - Prefer `FILE_PATCH` for small edits to large files.
 - Use self-closing tags when possible for rename and delete:
-  - `<FILE_RENAME from_path="a" to_path="b" />`
-  - `<FILE_DELETE file_path="path" />`
+  - `[[[FILE_RENAME from_path="a" to_path="b" /]]]`
+  - `[[[FILE_DELETE file_path="path" /]]]`
 - For `FILE_PATCH` content, use valid unified diff hunks starting with `@@ -start,len +start,len @@` or simplified `@@`.
 - `file_path` values should be relative paths (no traversal), to ensure base-dir guard passes.

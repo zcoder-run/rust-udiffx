@@ -1,6 +1,6 @@
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md">
+[[[FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md"]]]
 ```md
 @@
  # Dev Chat
@@ -22,6 +22,6 @@
 +
 +This will allow developers to quickly copy segments of the failing patch and search for them in the target file to identify why the match failed (e.g., drift, whitespace issues, or incorrect context).
 ```
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-</FILE_CHANGES>
+[[[/UDIFFX_FILE_CHANGES]]]

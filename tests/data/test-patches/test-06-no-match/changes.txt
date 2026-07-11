@@ -1,6 +1,6 @@
 
-<FILE_CHANGES>
-<FILE_PATCH file_path="README.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="README.md"]]]
 ```md
 @@
  - DDIt does not have any `\\?\` on Windows.
@@ -12,11 +12,11 @@
 
  This crate also offers a simple and scalable way to list or iterate on files, given a glob:
 
--- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<impl Iter SFile>`
--- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<Vec<SFile>>`
-+- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<impl Iter SPath>`
-+- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<Vec<SPath>>`
+-- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result[[[impl Iter SFile]]]`
+-- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result<Vec[[[SFile]]]>`
++- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result[[[impl Iter SPath]]]`
++- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result<Vec[[[SPath]]]>`
  - `ensure_dir(dir_path)` makes sure all the directory paths are created.
 ```
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]

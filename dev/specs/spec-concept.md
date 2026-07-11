@@ -10,11 +10,11 @@ While the format uses XML-like tags, it is not intended to be strictly XML compl
 
 ## Structure
 
-All modifications must be encapsulated within a single `<FILE_CHANGES>` root tag.
+All modifications must be encapsulated within a single `[[[UDIFFX_FILE_CHANGES]]]` root tag.
 
 ### Root Container
 
-- Tag: `<FILE_CHANGES>`
+- Tag: `[[[UDIFFX_FILE_CHANGES]]]`
 - Purpose: Encloses a sequence of file directives to be processed as a single unit.
 
 ## Directives
@@ -28,9 +28,9 @@ Used to create a new file. If the file already exists, it will be overwritten.
 
 Format:
 ```xml
-<FILE_NEW file_path="path/to/file.ext">
+[[[FILE_NEW file_path="path/to/file.ext">
 CONTENT
-</FILE_NEW>
+[[[/FILE_NEW]]]
 ```
 
 ### 2. Patch File (`FILE_PATCH`)
@@ -50,7 +50,7 @@ Format:
 -removed line
 +added line
  context line
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 ```
 
 ### 3. Append File (`FILE_APPEND`)
@@ -64,9 +64,9 @@ Used to append content to the end of a file. If the file does not exist, it is c
 
 Format:
 ```xml
-<FILE_APPEND file_path="path/to/file.ext">
+[[[FILE_APPEND file_path="path/to/file.ext"]
 CONTENT_TO_APPEND
-</FILE_APPEND>
+[[[/FILE_APPEND]]]
 ```
 
 ### 4. Copy File (`FILE_COPY`)
@@ -82,7 +82,7 @@ Used to copy a file from one path to another.
 
 Format:
 ```xml
-<FILE_COPY from_path="src/template.rs" to_path="src/template_copy.rs" />
+[[[FILE_COPY from_path="src/template.rs" to_path="src/template_copy.rs" /]]]
 ```
 
 ### 5. Rename File (`FILE_RENAME`)
@@ -93,7 +93,7 @@ Used to move or rename files and directories.
 
 Format:
 ```xml
-<FILE_RENAME from_path="src/old.rs" to_path="src/new.rs" />
+[[[FILE_RENAME from_path="src/old.rs" to_path="src/new.rs" /]]]
 ```
 
 ### 6. Delete File (`FILE_DELETE`)
@@ -103,8 +103,8 @@ Used to permanently remove a file or directory.
 - Attributes: `file_path="..."`
 
 Format:
-```xml
-<FILE_DELETE file_path="path/to/obsolete.txt" />
+```
+[[[FILE_DELETE file_path="path/to/obsolete.txt" /]]]
 ```
 
 ## Content Encoding and Fencing
@@ -117,13 +117,13 @@ To ensure better readability and compatibility with markdown-aware tools, conten
 
 Example with code fence:
 ```xml
-<FILE_NEW file_path="src/lib.rs">
+[[[FILE_NEW file_path="src/lib.rs">
 ```rust
 pub fn init() {
     // ...
 }
 ```
-</FILE_NEW>
+[[[/FILE_NEW]]]
 ```
 
 ## Unified Example
@@ -131,27 +131,27 @@ pub fn init() {
 Below is an example of a single response containing multiple operations, using both standard and simplified syntax.
 
 ```xml
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_COPY from_path="src/helpers.rs" to_path="src/helpers_backup.rs" />
+[[[FILE_COPY from_path="src/helpers.rs" to_path="src/helpers_backup.rs" /]]]
 
-<FILE_RENAME from_path="src/legacy_mod.rs" to_path="src/core_mod.rs" />
+[[[FILE_RENAME from_path="src/legacy_mod.rs" to_path="src/core_mod.rs" /]]]
 
-<FILE_DELETE file_path="temp_config.json" />
+[[[FILE_DELETE file_path="temp_config.json" /]]]
 
-<FILE_APPEND file_path="CHANGELOG.md">
+[[[FILE_APPEND file_path="CHANGELOG.md"]]]
 ```md
 - Added helper version accessor and startup message update.
 ```
-</FILE_APPEND>
+[[[/FILE_APPEND]]]
 
-<FILE_NEW file_path="src/helpers.rs">
+[[[FILE_NEW file_path="src/helpers.rs">
 ```rust
 pub fn get_version() -> &'static str {
     "0.1.0"
 }
 ```
-</FILE_NEW>
+[[[/FILE_NEW]]]
 
 <FILE_PATCH file_path="src/main.rs">
 @@
@@ -160,7 +160,7 @@ pub fn get_version() -> &'static str {
 +    println!("App v{}", helpers::get_version());
      core_mod::init();
  }
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
 </FILE_CHANGES>
 ```

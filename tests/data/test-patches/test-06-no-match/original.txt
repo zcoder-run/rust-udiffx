@@ -10,8 +10,8 @@ By applying the above rules, path/file APIs can be drastically simplified, and b
 
 This crate also offers a simple and scalable way to list or iterate on files, given a glob:
 
-- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<impl Iter SFile>`
-- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option<ListOptions>) -> Result<Vec<SFile>>`
+- `iter_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result[[[impl Iter SFile]]]`
+- `list_files(dir, include_globs: Option<&[&str]>, list_options: Option[[[ListOptions]]]) -> Result<Vec[[[SFile]]]>`
 - `ensure_dir(dir_path)` makes sure all the directory paths are created.
 - `ensure_file_dir(file_path)` makes sure the file directory exists.
 

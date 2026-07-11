@@ -1,6 +1,6 @@
 
-<FILE_CHANGES>
-<FILE_PATCH file_path="dev/spec-code/spec-code-tui.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="dev/spec-code/spec-code-tui.md"]]]
 @@ -107,7 +109,7 @@
 
  Time-based state transitions and expirations are primarily managed in `src/tui/core/app_state/state_processor.rs`.
@@ -10,5 +10,5 @@
  - **Timed Popups**: `PopupMode::Timed(Duration)` expiration (managed in `process_app_state`).
  - **Keep-Alive**: `AppState::should_be_pinged()` (in `app_state_base.rs`) determines if the TUI should continue receiving `AppEvent::Tick` events when idle.
  - **Timer Engine**: `src/tui/core/ping_timer.rs` provides the debounced 100ms background ticker that drives these transitions.
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]

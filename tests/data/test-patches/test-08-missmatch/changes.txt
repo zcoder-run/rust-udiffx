@@ -1,7 +1,7 @@
 
 
-<FILE_CHANGES>
-<FILE_PATCH file_path="dev/spec-code/spec-code-tui.md">
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_PATCH file_path="dev/spec-code/spec-code-tui.md"]]]
 @@
  pub enum AppActionEvent {
      Quit, Redo, CancelRun,
@@ -47,6 +47,6 @@
 +- `start_group() -> u32`: For multi-line section-wide hover.
 +- `push_group_zone(...)`: Registers a zone belonging to a group.
  - `is_mouse_over(area, scroll, mouse_evt, spans) -> Option<&mut [Span]>`.
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 

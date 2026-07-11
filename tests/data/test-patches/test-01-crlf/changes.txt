@@ -1,7 +1,7 @@
 
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_PATCH file_path="original.txt">
+[[[FILE_PATCH file_path="original.txt"]]]
 ```toml
 @@
 -edition = "2021"
@@ -39,6 +39,6 @@
 +notify = "8"
 +notify-debouncer-mini = "0.7"
 ```
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-</FILE_CHANGES>
+[[[/UDIFFX_FILE_CHANGES]]]

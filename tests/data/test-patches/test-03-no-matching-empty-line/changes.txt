@@ -1,7 +1,7 @@
 
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_PATCH file_path="original.txt">
+[[[FILE_PATCH file_path="original.txt"]]]
 ```rs
 @@
  use crate::support::jsons;
@@ -26,5 +26,5 @@
 +// region:    --- Support
 +
 ```
-</FILE_PATCH>
-</FILE_CHANGES>
+[[[/FILE_PATCH]]]
+[[[/UDIFFX_FILE_CHANGES]]]

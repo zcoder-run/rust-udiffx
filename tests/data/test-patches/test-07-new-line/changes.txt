@@ -1,6 +1,6 @@
-<FILE_CHANGES>
+[[[UDIFFX_FILE_CHANGES]]]
 
-<FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md">
+[[[FILE_PATCH file_path=".aipack/.prompt/pro@coder/dev/chat/dev-chat.md"]]]
 ```md
 @@
  # Dev Chat
@@ -11,6 +11,6 @@
 +
 +### Requirement and goal
 +
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-</FILE_CHANGES>
+[[[/UDIFFX_FILE_CHANGES]]]

@@ -572,7 +572,7 @@ fn run_test_scenario_to_output(folder: &str, should_fail: bool) -> Result<String
 /// do not collide with the real tag names during extraction.
 fn normalize_test_file_tags(input: &str) -> String {
 	input
-		.replace("TEST_FILE_CHANGES", "FILE_CHANGES")
+		.replace("TEST_FILE_CHANGES", "UDIFFX_FILE_CHANGES")
 		.replace("TEST_FILE_PATCH", "FILE_PATCH")
 		.replace("TEST_FILE_NEW", "FILE_NEW")
 		.replace("TEST_FILE_APPEND", "FILE_APPEND")

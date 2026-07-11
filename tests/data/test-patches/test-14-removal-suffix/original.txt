@@ -1,4 +1,4 @@
-    pub fn initialize_database_connection(config: &DatabaseConfig) -> Result<Connection> {
+    pub fn initialize_database_connection(config: &DatabaseConfig) -> Result[[[Connection]]] {
         let pool = create_connection_pool(config)?;
         let conn = pool.get_connection()?;
         conn.execute_setup_queries()?;

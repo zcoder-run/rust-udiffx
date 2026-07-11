@@ -1,10 +1,19 @@
 use crate::{Content, Error, FileChanges, FileDirective, Result};
-use markex::tag;
+use markex::tag::{self, TagFence};
+
+/// A triple-square-bracket fence for clearly separating structured payloads.
+pub const FENCE_UDIFFX: TagFence = TagFence {
+	name: "udiffx",
+	open_delim: "[[[",
+	close_delim: "]]]",
+	close_delim_alts: Some(&["]]"]),
+	closing_tag_prefix: "/",
+	self_closing_suffix: "/",
+};
 
 /// Extracts the first `FILE_CHANGES` block from the input string.
 pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<(FileChanges, Option<String>)> {
-	let parts = tag::extract(input, &["FILE_CHANGES"], extrude_other_content);
-
+	let parts = tag::extract_with_fence(input, &["UDIFFX_FILE_CHANGES"], extrude_other_content, FENCE_UDIFFX);
 	let (tag_elems, extruded) = if extrude_other_content {
 		let (elems, s) = parts.into_with_extrude_content();
 		(elems, Some(s))
@@ -19,9 +28,7 @@ pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<
 	let inner_content = changes_tag.content;
 
 	// -- Pre-process to expand potential self-closing tags (since markex might skip them)
-	let inner_content = expand_self_closing_tags(inner_content);
-
-	let child_parts = tag::extract(
+	let child_parts = tag::extract_with_fence(
 		&inner_content,
 		&[
 			"FILE_NEW",
@@ -32,6 +39,7 @@ pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<
 			"FILE_DELETE",
 		],
 		false,
+		FENCE_UDIFFX,
 	);
 
 	let mut directives = Vec::new();
@@ -124,42 +132,3 @@ pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<
 
 	Ok((FileChanges::new(directives), extruded))
 }
-
-// region:    --- Support
-
-/// Expands self-closing tags like <TAG /> to <TAG></TAG> so markex can find them.
-fn expand_self_closing_tags(mut content: String) -> String {
-	let tags = [
-		"FILE_NEW",
-		"FILE_PATCH",
-		"FILE_APPEND",
-		"FILE_COPY",
-		"FILE_RENAME",
-		"FILE_DELETE",
-	];
-	for tag in tags {
-		let mut search_pos = 0;
-		let tag_pattern = format!("<{tag}");
-		while let Some(start_idx) = content[search_pos..].find(&tag_pattern) {
-			let start_idx = search_pos + start_idx;
-			if let Some(end_idx) = content[start_idx..].find('>') {
-				let end_idx = start_idx + end_idx;
-				// Check if the tag is self-closing (ends with />)
-				let trimmed_part = content[..end_idx].trim_end();
-				if trimmed_part.ends_with('/') {
-					let slash_idx = trimmed_part.len() - 1;
-					let expansion = format!("></{tag}>");
-					content.replace_range(slash_idx..end_idx + 1, &expansion);
-					search_pos = slash_idx + expansion.len();
-				} else {
-					search_pos = end_idx + 1;
-				}
-			} else {
-				break;
-			}
-		}
-	}
-	content
-}
-
-// endregion: --- Support

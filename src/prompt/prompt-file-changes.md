@@ -1,383 +1,238 @@
-# File Changes Instructions 
+# UDIFFX File Changes Instructions
 
-Important: ALWAYS use this way (the FILE_CHANGES tag way) to update and change files when the user ask. Do not expect to any other tools to update files. Just use the FILE_CHANGES described below. 
+When modifying files, output exactly one `UDIFFX_FILE_CHANGES` block. This is the only supported mechanism for creating, updating, appending to, copying, renaming, moving, or deleting files.
 
-Whenever you want to make any modifications to any file (create, update, delete, move, rename, or copy), emit all change directives inside the single `<FILE_CHANGES>` container. Do not place any other content inside the `<FILE_CHANGES>` tag, only the file directive defined below.
+Do not use tools or any other file-editing format.
 
-<FILE_CHANGES>
-_file_directives_
-</FILE_CHANGES>
+```text
+[[[UDIFFX_FILE_CHANGES]]]
+_file directives_
+[[[/UDIFFX_FILE_CHANGES]]]
+```
 
-You may include explanation and other user requested content before or after the `<FILE_CHANGES>...</FILE_CHANGES>` block. 
+Do not include explanations, markdown, comments, or other content outside the block.
 
-## Mandatory Response Structure
+Every tag must:
 
-Any response that changes files MUST contain exactly one complete `<FILE_CHANGES>...</FILE_CHANGES>` block.
-
-The block MUST:
-
-1. Begin with the exact text `<FILE_CHANGES>`.
-2. Contain every file directive.
-3. End with the exact text `</FILE_CHANGES>`.
-4. Be fully closed before the response ends.
-
-An unclosed `<FILE_CHANGES>` block is invalid.
-
-Before returning the response, verify:
-
-- There is exactly one `<FILE_CHANGES>` opening tag.
-- There is exactly one `</FILE_CHANGES>` closing tag.
-- The closing tag appears after all file directives.
-- No file directive appears outside the block.
-
-Required shape:
-
-<FILE_CHANGES>
-_file_directives_
-</FILE_CHANGES>
-
-Never stop generating the response before emitting `</FILE_CHANGES>`.
-
-If additional explanation is included after the file changes, the `<FILE_CHANGES>` block MUST already be closed.
+* occupy its own line
+* begin at column 1
+* begin with `[[[` and end with `]]]`
+* contain only the bracket tag on that line
 
 ## File Directives
 
-| Directive   | Purpose                             |
-| ----------- | ----------------------------------- |
-| FILE_NEW    | Create a new file                   |
-| FILE_PATCH  | Modify existing content in a file   |
-| FILE_APPEND | Append content to the end of a file |
-| FILE_COPY   | Copy a file                         |
-| FILE_RENAME | Rename or move a file               |
-| FILE_DELETE | Delete a file                       |
+### Create a File
 
-**VERY IMPORTANT:** File directives can only be inside a single FILE_CHANGES tag. File directives cannot be at the root of your response, always within the FILE_CHANGES tag.
-
-## Directive Closure
-
-Every non-self-closing file directive MUST be closed before the next directive begins.
-
-Before responding, verify:
-
-- Every `<FILE_NEW>` has a matching `</FILE_NEW>`.
-- Every `<FILE_PATCH>` has a matching `</FILE_PATCH>`.
-- Every `<FILE_APPEND>` has a matching `</FILE_APPEND>`.
-- `FILE_COPY`, `FILE_RENAME`, and `FILE_DELETE` are self-closing.
-- No directive is nested inside another directive.
-
-### Directive Selection Hierarchy
-
-When deciding how to modify a file:
-
-1. Create a new file → FILE_NEW
-2. Add content only at EOF → FILE_APPEND
-3. Modify existing content anywhere in the file → FILE_PATCH
-4. Copy a file → FILE_COPY
-5. Rename or move a file → FILE_RENAME
-6. Delete a file → FILE_DELETE
-
-**CRITICAL: Never use FILE_PATCH for pure end-of-file additions. Use FILE_APPEND.**
-
-## Critical Output Constraints
-
-### Single FILE_CHANGES Container
-
-- There can be only one `<FILE_CHANGES>` container per response.
-- Think through all required modifications before emitting directives.
-- `<FILE_CHANGES>` may only contain file directives.
-- Do not place explanations, markdown, comments, XML tags, or any other content inside `<FILE_CHANGES>`.
-
-### One FILE_PATCH Per File
-
-**CRITICAL: For a given file, emit at most one FILE_PATCH directive.**
-
-In particular:
-
-- If a file requires multiple in-place edits, use a single FILE_PATCH containing multiple hunks.
-- A FILE_PATCH may contain any number of `@@` hunks.
-- The default assumption is that all in-place modifications for a file belong in one FILE_PATCH.
-- A second FILE_PATCH for the same file should be treated as an error unless it is literally impossible to express the change in a single patch.
-
-Example:
-
+```text
+[[[FILE_NEW file_path="path/to/file"]]]
+_complete file content_
+[[[/FILE_NEW]]]
 ```
-<FILE_CHANGES>
 
-<FILE_PATCH file_path="src/main.rs">
+Use `FILE_NEW` only when creating a new file. Include the complete file content.
+
+### Modify an Existing File
+
+```text
+[[[FILE_PATCH file_path="path/to/file"]]]
 @@
- first edit
+-old content
++new content
 
 @@
- second edit
-
-@@
- third edit
-</FILE_PATCH>
-
-</FILE_CHANGES>
+ context line
+-old value
++new value
+[[[/FILE_PATCH]]]
 ```
 
-### FILE_PATCH + FILE_APPEND Combination
+Use `FILE_PATCH` only when existing content must change.
 
-A file may legitimately use both FILE_PATCH and FILE_APPEND in the same response.
+For each file:
 
-Use this pattern when:
+* Emit at most one `FILE_PATCH`.
+* Put all in-place changes in that directive using multiple `@@` hunks.
+* Keep patches minimal.
+* Do not use line-numbered hunk headers.
+* Do not include `---` or `+++` file headers.
+* Do not use `FILE_PATCH` for content added only at end-of-file.
 
-- Existing content must be modified in-place.
-- Additional content must also be appended to the end of the file.
-
-Example:
-
-```
-<FILE_CHANGES>
-
-<FILE_PATCH file_path="src/main.ts">
-@@
--oldValue();
-+newValue();
-</FILE_PATCH>
-
-<FILE_APPEND file_path="src/main.ts">
-
-function newHelper() {
-    // ...
-}
-</FILE_APPEND>
-
-</FILE_CHANGES>
-```
-
-Rules:
-
-- Use exactly one FILE_PATCH for all in-place edits.
-- Use one FILE_APPEND for end-of-file additions.
-- Do not force EOF additions into FILE_PATCH merely to avoid a second directive.
-- If content is only being added at the end of a file, use FILE_APPEND and do not emit a FILE_PATCH.
-
-Decision rule:
-
-- Existing content changes → FILE_PATCH
-- EOF-only additions → FILE_APPEND
-- Both are needed → one FILE_PATCH + one FILE_APPEND
-
-## General Rules
-
-- The `file_path` attribute is the sole source of truth for the target file.
-- Preserve exact formatting, indentation, and whitespace.
-- Do not invent files or paths.
-- The code fence language (e.g. `rust`, `ts`, `python`) is for syntax highlighting only.
-- Triple-check that patch anchors exactly match the original file.
-- Never remove or alter existing comments unless explicitly requested.
-- Preserve comments verbatim, including spacing, indentation, and placement.
-- Do not add trivial explanatory comments.
-- Comment preservation overrides cleanup and refactoring preferences.
-
-## FILE_NEW
-
-Creates a new file.
-
-```
-<FILE_CHANGES>
-
-<FILE_NEW file_path="path/to/file.ext">
-_full_file_contents_
-</FILE_NEW>
-
-</FILE_CHANGES>
-```
-
-Rules:
-
-- The content must be the complete file.
-- Do not emit partial content.
-- Do not omit required sections of the file.
-
-## FILE_APPEND
-
-Appends content to the end of a file.
-
-If the file does not exist, it is created.
-
-Use for:
-
-- Adding functions at EOF
-- Adding entries to the end of a file
-- Extending lists located at EOF
-- Adding new sections at the end of a file
-
-```
-<FILE_CHANGES>
-
-<FILE_APPEND file_path="path/to/file.ext">
-_content_to_append_
-</FILE_APPEND>
-
-</FILE_CHANGES>
-```
-
-Rules:
-
-- Use FILE_APPEND whenever content is only being added at EOF.
-- Do not use FILE_PATCH for pure EOF additions.
-- FILE_APPEND may be used together with a FILE_PATCH for the same file when both in-place edits and EOF additions are required.
-- Even if a FILE_PATCH containing only `+` lines would technically work as an append, it should not be used. EOF-only additions belong in FILE_APPEND.
-- Prefer FILE_APPEND whenever no existing content needs to be modified.
-
-## Critical EOF Addition Rule
-
-Models sometimes use a FILE_PATCH containing only `+` lines to append content to a file. While this may work in some implementations, it is not the correct directive.
-
-When the change consists solely of adding content to the end of a file:
-
-- Use FILE_APPEND.
-- Do not use FILE_PATCH.
-- Do not emit a hunk that only adds new lines at EOF.
-- Do not use FILE_PATCH merely because it can technically represent the append.
-
-FILE_PATCH is for modifying existing content.
-FILE_APPEND is for adding new content at EOF.
-
-## FILE_PATCH
-
-Modifies an existing file using a simplified unified diff format.
-
-### Most Important Rule
-
-**A file should normally have exactly one FILE_PATCH directive.**
-
-If multiple modifications are required:
-
-- Use multiple `@@` hunks.
-- Keep all hunks inside the same FILE_PATCH.
-- A FILE_PATCH may contain any number of hunks.
-- Do not split modifications for the same file across multiple FILE_PATCH directives.
-
-Example:
-
-```
-<FILE_CHANGES>
-
-<FILE_PATCH file_path="src/app.ts">
-@@
- first modification
-
-@@
- second modification
-
-@@
- third modification
-</FILE_PATCH>
-
-</FILE_CHANGES>
-```
-
-### Additional FILE_PATCH Rules
-
-- Use FILE_PATCH only when existing content changes.
-- Keep patches minimal.
-- Preserve unrelated content exactly.
-- Prefer one FILE_PATCH with many hunks over multiple FILE_PATCH directives.
-- Do not use FILE_PATCH for pure EOF additions.
-- If both in-place edits and EOF additions are needed, use one FILE_PATCH plus one FILE_APPEND.
-
-### Hunk Header
-
-Use:
+Each hunk begins with:
 
 ```diff
 @@
 ```
 
-Rules:
+Every hunk body line must begin with exactly one prefix:
 
-- Never use line-numbered unified diff headers.
-- Do not include `---` or `+++` file header lines.
-- A single FILE_PATCH may contain many hunks.
+| Prefix | Meaning                                              |
+| ------ | ---------------------------------------------------- |
+| ` `    | Unchanged context                                    |
+| `-`    | Removed line                                         |
+| `+`    | Added line                                           |
+| `~`    | Omitted middle portion of a continuous removed range |
 
-## Hunk Body Line Format
+Context and removal lines must exactly match the original file, including indentation and whitespace.
 
-Every line inside a hunk must begin with exactly one prefix character.
+When replacing content, include the removed lines. Do not provide only the replacement.
 
-| Prefix | Meaning |
-| ------- | ------- |
-| ` `     | Context |
-| `-`     | Removal |
-| `+`     | Addition |
-| `~`     | Range removal |
-
-### Critical Rules
-
-- Every hunk line must begin with one of the allowed prefixes.
-- Context lines must be exact copies of the original file.
-- Removal lines must be exact copies of the original file.
-- Never omit removed lines when replacing content.
-- Preserve all unrelated content exactly.
-- Keep patches minimal.
-
-## Range Removal (`~`)
-
-Use when removing a large consecutive block.
-
-Example:
+Use `~` when removing a large continuous block:
 
 ```diff
 @@
--line 1
--line 2
+-first removed line
+-second removed line
 ~
--line 9
--line 10
+-second-to-last removed line
+-last removed line
 +replacement
 ```
 
+Rules for `~`:
+
+* It may appear only between removal lines.
+* It represents one continuous removed region.
+* No context or addition lines may appear inside the omitted region.
+* Prefer it when removing more than four or five consecutive lines.
+
+### Append to the End of a File
+
+```text
+[[[FILE_APPEND file_path="path/to/file"]]]
+_content to append_
+[[[/FILE_APPEND]]]
+```
+
+Use `FILE_APPEND` when content is added only at the end of a file.
+
+Typical uses include adding functions, entries, list items, or sections at end-of-file.
+
 Rules:
 
-- Must appear only between removal lines.
-- Must represent one continuous removed region.
-- No context lines may appear inside the removed span.
-- Prefer this form when removing more than 4–5 consecutive lines.
+* Do not represent a pure append using a `FILE_PATCH` containing only `+` lines.
+* If the file does not exist, `FILE_APPEND` creates it.
+* A file may have one `FILE_PATCH` and one `FILE_APPEND` when both existing content changes and end-of-file additions are required.
+
+Decision rule:
+
+* Create a new complete file → `FILE_NEW`
+* Change existing content → `FILE_PATCH`
+* Add content only at end-of-file → `FILE_APPEND`
+* Change existing content and append content → one `FILE_PATCH` plus one `FILE_APPEND`
+
+### Copy a File
+
+```text
+[[[FILE_COPY from_path="source" to_path="destination" /]]]
+```
+
+### Rename or Move a File
+
+```text
+[[[FILE_RENAME from_path="source" to_path="destination" /]]]
+```
+
+### Delete a File
+
+```text
+[[[FILE_DELETE file_path="path/to/file" /]]]
+```
+
+`FILE_COPY`, `FILE_RENAME`, and `FILE_DELETE` are self-closing and must end with ` /]]]`.
+
+## General Rules
+
+* Every file directive must be inside exactly one `UDIFFX_FILE_CHANGES` block.
+* No file directive may appear outside that block.
+* `UDIFFX_FILE_CHANGES`, `FILE_NEW`, `FILE_PATCH`, and `FILE_APPEND` must have matching closing tags.
+* Block closing tags must use the form `[[[/TAG_NAME]]]`.
+* Directives must not be nested inside other directives.
+* The `file_path` attribute is the sole source of truth for the target file.
+* Do not invent files or paths.
+* Preserve exact formatting, indentation, and whitespace.
+* Preserve existing comments verbatim unless explicitly asked to change them.
+* Do not add trivial explanatory comments.
+* Patch context and anchors must exactly match the original file.
+* Code-fence language identifiers are only syntax highlighting and are not part of the file content.
+* Think through all file changes before emitting the block.
+* The response must end immediately after `[[[/UDIFFX_FILE_CHANGES]]]`.
 
 ## Complete Example
 
-```
-<FILE_CHANGES>
-
-<FILE_NEW file_path="src/hello.rs">
+```text
+[[[UDIFFX_FILE_CHANGES]]]
+[[[FILE_NEW file_path="src/hello.rs"]]]
 pub fn hello() {
     println!("Hello from hello.rs");
 }
-</FILE_NEW>
+[[[/FILE_NEW]]]
 
-<FILE_PATCH file_path="src/main.rs">
+[[[FILE_PATCH file_path="src/main.rs"]]]
 @@
 +mod hello;
 
  fn main() {
--    println!("Old Message");
+-    println!("Old message");
 +    hello::hello();
  }
 
 @@
  fn helper() {
--    old_logic();
-+    new_logic();
+-old_logic();
++new_logic();
  }
-</FILE_PATCH>
+[[[/FILE_PATCH]]]
 
-<FILE_APPEND file_path="CHANGELOG.md">
+[[[FILE_APPEND file_path="CHANGELOG.md"]]]
 
 ## Added
 
 - Hello module
-</FILE_APPEND>
+[[[/FILE_APPEND]]]
 
-<FILE_COPY from_path="docs/OLD_README.md" to_path="docs/README.backup.md" />
+[[[FILE_COPY from_path="docs/OLD_README.md" to_path="docs/README.backup.md" /]]]
 
-<FILE_RENAME from_path="docs/OLD_README.md" to_path="README.md" />
+[[[FILE_RENAME from_path="docs/OLD_README.md" to_path="README.md" /]]]
 
-<FILE_DELETE file_path="temp_notes.txt" />
-
-</FILE_CHANGES>
+[[[FILE_DELETE file_path="temp_notes.txt" /]]]
+[[[/UDIFFX_FILE_CHANGES]]]
 ```
 
-Always to close the FILE_CHANGES tag and directive tags. 
+Before returning, verify that:
+
+* there is exactly one `[[[UDIFFX_FILE_CHANGES]]]` tag
+* there is exactly one `[[[/UDIFFX_FILE_CHANGES]]]` tag
+* every block directive has its matching closing tag
+* every self-closing directive ends with ` /]]]`
+* no directive is nested inside another directive
+* each file has at most one `FILE_PATCH`
+* pure end-of-file additions use `FILE_APPEND`
+* every patch hunk line has a valid prefix
+* the last file directive is fully closed
+* the final non-whitespace line is exactly:
+
+```text
+[[[/UDIFFX_FILE_CHANGES]]]
+```
+
+## Exact Closing-Tag Syntax
+
+Block directives use slash-style closing tags.
+
+Correct:
+
+[[[/UDIFFX_FILE_CHANGES]]]
+[[[/FILE_NEW]]]
+[[[/FILE_PATCH]]]
+[[[/FILE_APPEND]]]
+
+The first three characters of every closing tag must be exactly `[[[`.
+The fourth character must be exactly `/`.
+
+DO NOT replace `[[[` with `***`.
+DO NOT output forms such as:
+```
+***[/FILE_PATCH]]]
+*** End Patch
+[/FILE_PATCH]]]
+```
