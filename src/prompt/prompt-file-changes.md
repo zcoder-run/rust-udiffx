@@ -1,6 +1,6 @@
 # UDIFFX File Changes Instructions
 
-When modifying files, output exactly one `UDIFFX_FILE_CHANGES` block. This is the only supported mechanism for creating, updating, appending to, copying, renaming, moving, or deleting files.
+When modifying files, output exactly one `UDIFFX_FILE_CHANGES` bracket tag block. This is the only supported mechanism for creating, updating, appending to, copying, renaming, moving, or deleting files.
 
 Do not use tools or any other file-editing format.
 
@@ -14,14 +14,14 @@ Do not include explanations, markdown, comments, or other content outside the bl
 
 Every tag must:
 
-* occupy its own line
-* begin at column 1
-* begin with `[[[` and end with `]]]`
-* contain only the bracket tag on that line
+- occupy its own line
+- begin at column 1
+- begin with `[[[` and end with `]]]`
+- contain only the bracket tag on that line
 
 ## File Directives
 
-### Create a File
+### Create a File with FILE_NEW
 
 ```text
 [[[FILE_NEW file_path="path/to/file"]]]
@@ -31,7 +31,9 @@ _complete file content_
 
 Use `FILE_NEW` only when creating a new file. Include the complete file content.
 
-### Modify an Existing File
+### Modify an Existing File with FILE_PATCH
+
+This is a specialized patch format, with the markers defined below (we do not have `***` markers with this patch format)
 
 ```text
 [[[FILE_PATCH file_path="path/to/file"]]]
@@ -43,34 +45,34 @@ Use `FILE_NEW` only when creating a new file. Include the complete file content.
  context line
 -old value
 +new value
-[[[/FILE_PATCH]]]
+[[[/FILE_PATCH]]] <<<--- IMPORTANT: Always end FILE_PATCH with this end backet tag
 ```
 
 Use `FILE_PATCH` only when existing content must change.
 
 For each file:
 
-* Emit at most one `FILE_PATCH`.
-* Put all in-place changes in that directive using multiple `@@` hunks.
-* Keep patches minimal.
-* Do not use line-numbered hunk headers.
-* Do not include `---` or `+++` file headers.
-* Do not use `FILE_PATCH` for content added only at end-of-file.
+- Emit at most one `FILE_PATCH`.
+- Put all in-place changes in that directive using multiple `@@` hunks.
+- Keep patches minimal.
+- Do not use line-numbered hunk headers.
+- Do not include `---` or `+++` file headers.
+- Do not use `FILE_PATCH` for content added only at end-of-file.
 
 Each hunk begins with:
 
-```diff
+```
 @@
 ```
 
 Every hunk body line must begin with exactly one prefix:
 
-| Prefix | Meaning                                              |
-| ------ | ---------------------------------------------------- |
-| ` `    | Unchanged context                                    |
-| `-`    | Removed line                                         |
-| `+`    | Added line                                           |
-| `~`    | Omitted middle portion of a continuous removed range |
+| Prefix | Meaning                                                            |
+| ------ | ------------------------------------------------------------------ |
+| ` `    | Unchanged context, surround to ground following or previous change |
+| `-`    | Removed line                                                       |
+| `+`    | Added line                                                         |
+| `~`    | Omitted middle portion of a continuous removed range               |
 
 Context and removal lines must exactly match the original file, including indentation and whitespace.
 
@@ -90,17 +92,17 @@ Use `~` when removing a large continuous block:
 
 Rules for `~`:
 
-* It may appear only between removal lines.
-* It represents one continuous removed region.
-* No context or addition lines may appear inside the omitted region.
-* Prefer it when removing more than four or five consecutive lines.
+- It may appear only between removal lines.
+- It represents one continuous removed region.
+- No context or addition lines may appear inside the omitted region.
+- Prefer it when removing more than four or five consecutive lines.
 
-### Append to the End of a File
+### Append to the End of a File with FILE_APPEND
 
 ```text
 [[[FILE_APPEND file_path="path/to/file"]]]
 _content to append_
-[[[/FILE_APPEND]]]
+[[[/FILE_APPEND]]] <<<--- IMPORTANT: Always end FILE_APPEND with this end backet tag
 ```
 
 Use `FILE_APPEND` when content is added only at the end of a file.
@@ -109,30 +111,30 @@ Typical uses include adding functions, entries, list items, or sections at end-o
 
 Rules:
 
-* Do not represent a pure append using a `FILE_PATCH` containing only `+` lines.
-* If the file does not exist, `FILE_APPEND` creates it.
-* A file may have one `FILE_PATCH` and one `FILE_APPEND` when both existing content changes and end-of-file additions are required.
+- Do not represent a pure append using a `FILE_PATCH` containing only `+` lines.
+- If the file does not exist, `FILE_APPEND` creates it.
+- A file may have one `FILE_PATCH` and one `FILE_APPEND` when both existing content changes and end-of-file additions are required.
 
 Decision rule:
 
-* Create a new complete file → `FILE_NEW`
-* Change existing content → `FILE_PATCH`
-* Add content only at end-of-file → `FILE_APPEND`
-* Change existing content and append content → one `FILE_PATCH` plus one `FILE_APPEND`
+- Create a new complete file → `FILE_NEW`
+- Change existing content → `FILE_PATCH`
+- Add content only at end-of-file → `FILE_APPEND`
+- Change existing content and append content → one `FILE_PATCH` plus one `FILE_APPEND`
 
-### Copy a File
+### Copy a File with FILE_COPY
 
 ```text
 [[[FILE_COPY from_path="source" to_path="destination" /]]]
 ```
 
-### Rename or Move a File
+### Rename or Move a File with FILE_RENAME
 
 ```text
 [[[FILE_RENAME from_path="source" to_path="destination" /]]]
 ```
 
-### Delete a File
+### Delete a File with FILE_DELETE
 
 ```text
 [[[FILE_DELETE file_path="path/to/file" /]]]
@@ -142,20 +144,20 @@ Decision rule:
 
 ## General Rules
 
-* Every file directive must be inside exactly one `UDIFFX_FILE_CHANGES` block.
-* No file directive may appear outside that block.
-* `UDIFFX_FILE_CHANGES`, `FILE_NEW`, `FILE_PATCH`, and `FILE_APPEND` must have matching closing tags.
-* Block closing tags must use the form `[[[/TAG_NAME]]]`.
-* Directives must not be nested inside other directives.
-* The `file_path` attribute is the sole source of truth for the target file.
-* Do not invent files or paths.
-* Preserve exact formatting, indentation, and whitespace.
-* Preserve existing comments verbatim unless explicitly asked to change them.
-* Do not add trivial explanatory comments.
-* Patch context and anchors must exactly match the original file.
-* Code-fence language identifiers are only syntax highlighting and are not part of the file content.
-* Think through all file changes before emitting the block.
-* The response must end immediately after `[[[/UDIFFX_FILE_CHANGES]]]`.
+- Every file directive must be inside exactly one `UDIFFX_FILE_CHANGES` block.
+- No file directive may appear outside that block.
+- `UDIFFX_FILE_CHANGES`, `FILE_NEW`, `FILE_PATCH`, and `FILE_APPEND` must have matching closing tags.
+- Block closing tags must use the form `[[[/TAG_NAME]]]`.
+- Directives must not be nested inside other directives.
+- The `file_path` attribute is the sole source of truth for the target file.
+- Do not invent files or paths.
+- Preserve exact formatting, indentation, and whitespace.
+- Preserve existing comments verbatim unless explicitly asked to change them.
+- Do not add trivial explanatory comments.
+- Patch context and anchors must exactly match the original file.
+- Code-fence language identifiers are only syntax highlighting and are not part of the file content.
+- Think through all file changes before emitting the block.
+- The response must end immediately after `[[[/UDIFFX_FILE_CHANGES]]]`.
 
 ## Complete Example
 
@@ -181,7 +183,7 @@ pub fn hello() {
 -old_logic();
 +new_logic();
  }
-[[[/FILE_PATCH]]]
+[[[/FILE_PATCH]]] <<<--- IMPORTANT: Always end FILE_PATCH with this end backet tag
 
 [[[FILE_APPEND file_path="CHANGELOG.md"]]]
 
@@ -200,16 +202,16 @@ pub fn hello() {
 
 Before returning, verify that:
 
-* there is exactly one `[[[UDIFFX_FILE_CHANGES]]]` tag
-* there is exactly one `[[[/UDIFFX_FILE_CHANGES]]]` tag
-* every block directive has its matching closing tag
-* every self-closing directive ends with ` /]]]`
-* no directive is nested inside another directive
-* each file has at most one `FILE_PATCH`
-* pure end-of-file additions use `FILE_APPEND`
-* every patch hunk line has a valid prefix
-* the last file directive is fully closed
-* the final non-whitespace line is exactly:
+- there is exactly one `[[[UDIFFX_FILE_CHANGES]]]` tag
+- there is exactly one `[[[/UDIFFX_FILE_CHANGES]]]` tag
+- every block directive has its matching closing tag
+- every self-closing directive ends with ` /]]]`
+- no directive is nested inside another directive
+- each file has at most one `FILE_PATCH`
+- pure end-of-file additions use `FILE_APPEND`
+- every patch hunk line has a valid prefix
+- the last file directive is fully closed
+- the final non-whitespace line is exactly:
 
 ```text
 [[[/UDIFFX_FILE_CHANGES]]]
@@ -225,14 +227,3 @@ Correct:
 [[[/FILE_NEW]]]
 [[[/FILE_PATCH]]]
 [[[/FILE_APPEND]]]
-
-The first three characters of every closing tag must be exactly `[[[`.
-The fourth character must be exactly `/`.
-
-DO NOT replace `[[[` with `***`.
-DO NOT output forms such as:
-```
-***[/FILE_PATCH]]]
-*** End Patch
-[/FILE_PATCH]]]
-```
