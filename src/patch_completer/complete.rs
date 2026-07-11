@@ -5,7 +5,7 @@ use super::parse::{
 	validate_and_parse_tilde_ranges,
 };
 use super::types::{AdjacentHints, CandidateMatch, HunkBounds, MatchTier, TildeRange};
-use crate::{Error, Result};
+use crate::{Error, Result, U_HUNK_DELIM};
 use std::borrow::Cow;
 
 /// Completes a raw simplified patch (numberless `@@` hunks) into a fully valid unified diff
@@ -47,7 +47,7 @@ pub fn complete(original_content: &str, patch_raw: &str) -> Result<(String, Opti
 	// Collect non-hunk prefix lines (e.g. file headers) from before first @@
 	for line in patch_raw.lines() {
 		let trimmed = line.trim();
-		if trimmed.starts_with("@@") {
+		if trimmed.starts_with(U_HUNK_DELIM) {
 			break;
 		}
 		if !is_wrapper_meta_line(trimmed) {
@@ -63,7 +63,7 @@ pub fn complete(original_content: &str, patch_raw: &str) -> Result<(String, Opti
 
 		for line in sanitized_patch_raw.lines() {
 			let trimmed = line.trim();
-			if trimmed.starts_with("@@") {
+			if trimmed.starts_with(U_HUNK_DELIM) {
 				break;
 			}
 			if !is_wrapper_meta_line(trimmed) {

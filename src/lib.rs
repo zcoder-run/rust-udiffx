@@ -12,8 +12,6 @@ mod files_context;
 mod patch_completer;
 mod security_policy;
 
-pub use security_policy::SecurityPolicy;
-
 pub use applier::{ApplyPatchIncrementalData, apply_file_changes};
 pub use apply_changes_status::*;
 pub use error::*;
@@ -22,6 +20,7 @@ pub use file_changes::*;
 pub use file_directives::*;
 pub use files_context::load_files_context;
 pub use patch_completer::{MatchTier, has_actionable_hunks, has_tilde_ranges, split_raw_hunks};
+pub use security_policy::SecurityPolicy;
 
 // -- feature prompt
 #[cfg(feature = "prompt")]
@@ -36,3 +35,5 @@ pub mod for_test {
 }
 
 // endregion: --- Modules
+
+const U_HUNK_DELIM: &str = "@@";

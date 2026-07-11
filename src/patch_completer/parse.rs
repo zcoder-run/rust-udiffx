@@ -1,6 +1,6 @@
 use super::TILDE_MIN_ANCHOR_LINES;
 use super::types::TildeRange;
-use crate::{Error, Result};
+use crate::{Error, Result, U_HUNK_DELIM};
 use std::borrow::Cow;
 
 // region:    --- Public Helpers
@@ -45,7 +45,7 @@ pub fn split_raw_hunks(patch_raw: &str) -> Vec<String> {
 		return raw_hunks
 			.into_iter()
 			.map(|lines| {
-				let mut hunk_str = String::from("@@\n");
+				let mut hunk_str = format!("{}\n", U_HUNK_DELIM);
 				for line in lines {
 					hunk_str.push_str(line);
 					hunk_str.push('\n');
@@ -63,7 +63,7 @@ pub fn split_raw_hunks(patch_raw: &str) -> Vec<String> {
 	raw_hunks
 		.into_iter()
 		.map(|lines| {
-			let mut hunk_str = String::from("@@\n");
+			let mut hunk_str = format!("{}\n", U_HUNK_DELIM);
 			for line in lines {
 				hunk_str.push_str(line);
 				hunk_str.push('\n');
@@ -92,7 +92,7 @@ pub(super) fn collect_raw_hunks(patch_text: &str) -> Vec<Vec<&str>> {
 	while let Some(line) = lines.next() {
 		let trimmed = line.trim();
 
-		if trimmed.starts_with("@@") {
+		if trimmed.starts_with(U_HUNK_DELIM) {
 			let mut hunk_lines = Vec::new();
 			while let Some(next_line) = lines.peek() {
 				let next_trimmed = next_line.trim();
@@ -138,11 +138,11 @@ pub(super) fn collect_raw_hunks_sanitized(patch_text: &str) -> Vec<Vec<&str>> {
 			continue;
 		}
 
-		if trimmed.starts_with("@@") {
+		if trimmed.starts_with(U_HUNK_DELIM) {
 			let mut hunk_lines = Vec::new();
 			while let Some(next_line) = lines.peek() {
 				let next_trimmed = next_line.trim();
-				if next_trimmed.starts_with("@@") {
+				if next_trimmed.starts_with(U_HUNK_DELIM) {
 					break;
 				}
 				let next_line = lines.next().unwrap();
