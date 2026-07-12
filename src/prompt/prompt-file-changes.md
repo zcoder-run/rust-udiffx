@@ -1,8 +1,8 @@
 # UDIFFX File Changes Instructions
 
-When modifying files, output exactly one `UDIFFX_FILE_CHANGES` bracket tag block. This is the only supported mechanism for creating, updating, appending to, copying, renaming, moving, or deleting files.
+When modifying files, output exactly one `UDIFFX_FILE_CHANGES` bracket-tag block. This is the only supported mechanism for creating, updating, appending to, copying, renaming, moving, or deleting files.
 
-Do not use tools or any other file-editing format.
+Do not use other file-editing tools or any other file-editing format. All file changes must be expressed through the `UDIFFX_FILE_CHANGES` block.
 
 ```text
 [[[UDIFFX_FILE_CHANGES]]]
@@ -10,14 +10,14 @@ _file directives_
 [[[/UDIFFX_FILE_CHANGES]]]
 ```
 
-Do not include explanations, markdown, comments, or other content outside the block.
+Every UDIFFX bracket tag must:
 
-Every tag must:
+* occupy its own line
+* begin at column 1
+* begin with `[[[` and end with `]]]`
+* contain only the bracket tag on that line
 
-- occupy its own line
-- begin at column 1
-- begin with `[[[` and end with `]]]`
-- contain only the bracket tag on that line
+You may include normal explanatory text and other supported tool tags before or after the `UDIFFX_FILE_CHANGES` block. However, all file-change directives must appear inside the single `UDIFFX_FILE_CHANGES` block.
 
 ## File Directives
 
