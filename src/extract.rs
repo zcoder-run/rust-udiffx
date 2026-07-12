@@ -1,5 +1,5 @@
 use crate::{Content, Error, FileChanges, FileDirective, Result};
-use markex::tag::{self, TagFence};
+use markex::tag::{self, TagFence, TagOptions};
 
 /// A triple-square-bracket fence for clearly separating structured payloads.
 pub const FENCE_UDIFFX: TagFence = TagFence {
@@ -13,7 +13,13 @@ pub const FENCE_UDIFFX: TagFence = TagFence {
 
 /// Extracts the first `FILE_CHANGES` block from the input string.
 pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<(FileChanges, Option<String>)> {
-	let parts = tag::extract_with_fence(input, &["UDIFFX_FILE_CHANGES"], extrude_other_content, FENCE_UDIFFX);
+	let udiffx_tag_options = TagOptions {
+		fence: Some(FENCE_UDIFFX),
+		auto_close: false,
+		capture_text: extrude_other_content,
+	};
+
+	let parts = tag::extract(input, &["UDIFFX_FILE_CHANGES"], udiffx_tag_options);
 	let (tag_elems, extruded) = if extrude_other_content {
 		let (elems, s) = parts.into_with_extrude_content();
 		(elems, Some(s))
@@ -28,7 +34,12 @@ pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<
 	let inner_content = changes_tag.content;
 
 	// -- Pre-process to expand potential self-closing tags (since markex might skip them)
-	let child_parts = tag::extract_with_fence(
+	let udiffx_file_tag_options = TagOptions {
+		fence: Some(FENCE_UDIFFX),
+		auto_close: true,
+		capture_text: false,
+	};
+	let child_parts = tag::extract(
 		&inner_content,
 		&[
 			"FILE_NEW",
@@ -38,8 +49,7 @@ pub fn extract_file_changes(input: &str, extrude_other_content: bool) -> Result<
 			"FILE_RENAME",
 			"FILE_DELETE",
 		],
-		false,
-		FENCE_UDIFFX,
+		udiffx_file_tag_options,
 	);
 
 	let mut directives = Vec::new();

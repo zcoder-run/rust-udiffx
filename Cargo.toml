@@ -27,14 +27,18 @@ unsafe_code = "forbid"
 test-support = []
 prompt = []
 
+# local dev
+[patch.crates-io]
+# markex = { path = ".../rust-markex" }
+
 [dependencies]
-# -- Tracing
-tracing = "0.1"
 # -- Files
 simple-fs = { version = "0.12.1"}
 # -- Diff & Text
 diffy = "0.5"
-markex = { version = "0.2.0"}
+markex = { version = "0.3.0-beta.1"}
+# -- Tracing
+tracing = "0.1"
 # -- Others
 derive_more = { version = "2", features = ["from", "display"] }
 
