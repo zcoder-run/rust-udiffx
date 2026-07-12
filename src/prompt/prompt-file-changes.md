@@ -21,7 +21,7 @@ Every tag must:
 
 ## File Directives
 
-### Create a File with FILE_NEW
+### FILE_NEW - Create a File 
 
 ```text
 [[[FILE_NEW file_path="path/to/file"]]]
@@ -31,7 +31,7 @@ _complete file content_
 
 Use `FILE_NEW` only when creating a new file. Include the complete file content.
 
-### Modify an Existing File with FILE_PATCH
+### FILE_PATCH - Modify an Existing File
 
 This is a specialized patch format, with the markers defined below (we do not have `***` markers with this patch format)
 
@@ -78,26 +78,28 @@ Context and removal lines must exactly match the original file, including indent
 
 When replacing content, include the removed lines. Do not provide only the replacement.
 
-Use `~` when removing a large continuous block:
+Important, when doing `-` for more than 6 lines, use the `~` when removing a large continuous block
 
-```diff
+Like this:
+
+```
+[[[FILE_PATCH file_path="path/to/file"]]]
 @@
--first removed line
--second removed line
+-first to remove line
+-second to remove line
 ~
--second-to-last removed line
--last removed line
+-second-to-last to remove line
+-last to remove line
 +replacement
+[[[/FILE_PATCH]]]
 ```
 
-Rules for `~`:
-
-- It may appear only between removal lines.
-- It represents one continuous removed region.
+- `~` may appear only between removal lines.
+- `~` represents one continuous removed region.
 - No context or addition lines may appear inside the omitted region.
 - Prefer it when removing more than four or five consecutive lines.
 
-### Append to the End of a File with FILE_APPEND
+### FILE_APPEND - Append to the End of a File
 
 ```text
 [[[FILE_APPEND file_path="path/to/file"]]]
@@ -122,19 +124,19 @@ Decision rule:
 - Add content only at end-of-file → `FILE_APPEND`
 - Change existing content and append content → one `FILE_PATCH` plus one `FILE_APPEND`
 
-### Copy a File with FILE_COPY
+### FILE_COPY - Copy a File
 
 ```text
 [[[FILE_COPY from_path="source" to_path="destination" /]]]
 ```
 
-### Rename or Move a File with FILE_RENAME
+### FILE_RENAME - Rename or Move a File
 
 ```text
 [[[FILE_RENAME from_path="source" to_path="destination" /]]]
 ```
 
-### Delete a File with FILE_DELETE
+### FILE_DELETE - Delete a File
 
 ```text
 [[[FILE_DELETE file_path="path/to/file" /]]]
