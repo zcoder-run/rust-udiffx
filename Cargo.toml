@@ -36,7 +36,7 @@ prompt = []
 simple-fs = { version = "0.12.1"}
 # -- Diff & Text
 diffy = "0.5"
-markex = { version = "0.3.0-beta.1"}
+markex = { version = "=0.3.0-beta.2"}
 # -- Tracing
 tracing = "0.1"
 # -- Others
