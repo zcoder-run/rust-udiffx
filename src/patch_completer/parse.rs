@@ -86,6 +86,7 @@ pub fn has_tilde_ranges(hunk_raw: &str) -> bool {
 ///
 /// Shared by both `split_raw_hunks` and `complete` to avoid duplicating the parsing logic.
 pub(super) fn collect_raw_hunks(patch_text: &str) -> Vec<Vec<&str>> {
+	let patch_text = remove_final_malformed_wrapper_terminator(patch_text);
 	let mut raw_hunks: Vec<Vec<&str>> = Vec::new();
 	let mut lines = patch_text.lines().peekable();
 
@@ -128,6 +129,7 @@ pub(super) fn collect_raw_hunks(patch_text: &str) -> Vec<Vec<&str>> {
 /// This is used as a resilience path when wrapper lines like `*** End Patch` appear
 /// inside or after otherwise valid hunks. Unknown `*** ...` lines are preserved.
 pub(super) fn collect_raw_hunks_sanitized(patch_text: &str) -> Vec<Vec<&str>> {
+	let patch_text = remove_final_malformed_wrapper_terminator(patch_text);
 	let mut raw_hunks: Vec<Vec<&str>> = Vec::new();
 	let mut lines = patch_text.lines().peekable();
 
@@ -251,6 +253,7 @@ pub(super) fn is_wrapper_meta_line(trimmed: &str) -> bool {
 }
 
 pub(super) fn sanitize_wrapper_meta_lines(patch_raw: &str) -> String {
+	let patch_raw = remove_final_malformed_wrapper_terminator(patch_raw);
 	let mut out = String::new();
 	for line in patch_raw.lines() {
 		if is_wrapper_meta_line(line.trim()) {
@@ -260,4 +263,50 @@ pub(super) fn sanitize_wrapper_meta_lines(patch_raw: &str) -> String {
 		out.push('\n');
 	}
 	out
+}
+
+fn remove_final_malformed_wrapper_terminator(patch_raw: &str) -> &str {
+	let mut offset = 0;
+	let mut final_non_empty_line: Option<(usize, &str)> = None;
+
+	for segment in patch_raw.split_inclusive('\n') {
+		let line = segment.strip_suffix('\n').unwrap_or(segment);
+		if !line.trim().is_empty() {
+			final_non_empty_line = Some((offset, line));
+		}
+		offset += segment.len();
+	}
+
+	let Some((line_start, line)) = final_non_empty_line else {
+		return patch_raw;
+	};
+
+	if is_malformed_wrapper_terminator(line) {
+		&patch_raw[..line_start]
+	} else {
+		patch_raw
+	}
+}
+
+fn is_malformed_wrapper_terminator(line: &str) -> bool {
+	if line.starts_with([' ', '+', '-']) {
+		return false;
+	}
+
+	let Some(marker_content) = line.trim().strip_prefix("***") else {
+		return false;
+	};
+
+	let mut expected_chars = "endpatch".chars();
+	for character in marker_content.chars() {
+		if character.is_ascii_alphabetic() {
+			if expected_chars.next() != Some(character.to_ascii_lowercase()) {
+				return false;
+			}
+		} else if !character.is_ascii_whitespace() && !character.is_ascii_punctuation() {
+			return false;
+		}
+	}
+
+	expected_chars.next().is_none()
 }

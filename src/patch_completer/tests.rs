@@ -1739,7 +1739,7 @@ fn test_patch_completer_complete_with_wrapper_and_blank_lines() -> Result<()> {
 
 	// -- Check
 	assert!(completed.contains("+c-updated"));
-	assert!(completed.contains("@@ -2,2 +2,3 @@"));
+	assert!(completed.contains("@@ -2,2 +2,2 @@"));
 	let tier = tier.ok_or("Should have a tier")?;
 	assert_eq!(
 		tier,
@@ -1807,6 +1807,63 @@ omega
 		tier,
 		MatchTier::Strict,
 		"Expected Strict tier for literal wrapper/unknown star lines in original content, got {tier:?}"
+	);
+
+	Ok(())
+}
+
+#[test]
+fn test_patch_completer_complete_removes_final_malformed_wrapper_terminators() -> Result<()> {
+	// -- Setup & Fixtures
+	let original = "alpha\nbeta\ngamma\n";
+	let terminators = ["*** End Patch]]", "***end patch", "*** END, PATCH]"];
+
+	// -- Exec & Check
+	for terminator in terminators {
+		let patch = format!("@@\n beta\n-gamma\n+gamma2\n{terminator}\n");
+		let (completed, tier) = complete(original, &patch)?;
+		let hunks = split_raw_hunks(&patch);
+
+		assert!(completed.contains("+gamma2"));
+		assert!(!completed.contains(terminator));
+		assert!(has_actionable_hunks(&patch));
+		assert_eq!(hunks.len(), 1);
+		assert!(
+			!hunks
+				.first()
+				.ok_or("Expected a completed raw hunk")?
+				.contains(terminator)
+		);
+		assert_eq!(tier, Some(MatchTier::Strict));
+	}
+
+	Ok(())
+}
+
+#[test]
+fn test_patch_completer_split_raw_hunks_preserves_non_matching_final_star_lines() -> Result<()> {
+	// -- Setup & Fixtures
+	let unknown_terminator_patch = "@@\n beta\n+gamma2\n*** End Patched]]\n";
+	let diff_prefixed_terminator_patch = "@@\n beta\n+*** End Patch]]\n";
+
+	// -- Exec
+	let unknown_hunks = split_raw_hunks(unknown_terminator_patch);
+	let diff_prefixed_hunks = split_raw_hunks(diff_prefixed_terminator_patch);
+
+	// -- Check
+	assert_eq!(unknown_hunks.len(), 1);
+	assert!(
+		unknown_hunks
+			.first()
+			.ok_or("Expected an unknown-marker raw hunk")?
+			.contains("*** End Patched]]")
+	);
+	assert_eq!(diff_prefixed_hunks.len(), 1);
+	assert!(
+		diff_prefixed_hunks
+			.first()
+			.ok_or("Expected a diff-prefixed raw hunk")?
+			.contains("+*** End Patch]]")
 	);
 
 	Ok(())
