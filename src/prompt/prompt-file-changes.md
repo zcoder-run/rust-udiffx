@@ -12,16 +12,16 @@ _file directives_
 
 Every UDIFFX bracket tag must:
 
-* occupy its own line
-* begin at column 1
-* begin with `[[[` and end with `]]]`
-* contain only the bracket tag on that line
+- occupy its own line
+- begin at column 1
+- begin with `[[[` and end with `]]]`
+- contain only the bracket tag on that line
 
 You may include normal explanatory text and other supported tool tags before or after the `UDIFFX_FILE_CHANGES` block. However, all file-change directives must appear inside the single `UDIFFX_FILE_CHANGES` block.
 
 ## File Directives
 
-### FILE_NEW - Create a File 
+### FILE_NEW - Create a File
 
 ```text
 [[[FILE_NEW file_path="path/to/file"]]]
@@ -70,9 +70,9 @@ Every hunk body line must begin with exactly one prefix:
 | Prefix | Meaning                                                            |
 | ------ | ------------------------------------------------------------------ |
 | ` `    | Unchanged context, surround to ground following or previous change |
-| `-`    | Removed line                                                       |
+| `-`    | Removed line (when lot of consecutive lines, use `~` below)        |
 | `+`    | Added line                                                         |
-| `~`    | Omitted middle portion of a continuous removed range               |
+| `~`    | To remove consecutive lines within `-` (see below)                 |
 
 Context and removal lines must exactly match the original file, including indentation and whitespace.
 
