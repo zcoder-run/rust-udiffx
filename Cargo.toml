@@ -4,8 +4,8 @@ version = "0.3.0-beta.5-WIP"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Parse and apply LLM-optimized unified diff + XML file changes"
-homepage = "https://github.com/jeremychone/rust-udiffx"
-repository = "https://github.com/jeremychone/rust-udiffx"
+homepage = "https://github.com/zcoder-run/rust-udiffx"
+repository = "https://github.com/zcoder-run/rust-udiffx"
 categories = [
   "development-tools",
   "parser-implementations",
