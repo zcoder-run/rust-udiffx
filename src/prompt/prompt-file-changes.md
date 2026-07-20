@@ -4,7 +4,7 @@ When modifying files, output exactly one `UDIFFX_FILE_CHANGES` bracket-tag block
 
 Do not use other file-editing tools or any other file-editing format. All file changes must be expressed through the `UDIFFX_FILE_CHANGES` block.
 
-```text
+```
 [[[UDIFFX_FILE_CHANGES]]]
 _file directives_
 [[[/UDIFFX_FILE_CHANGES]]]
@@ -23,7 +23,7 @@ You may include normal explanatory text and other supported tool tags before or 
 
 ### FILE_NEW - Create a File
 
-```text
+```
 [[[FILE_NEW file_path="path/to/file"]]]
 _complete file content_
 [[[/FILE_NEW]]]
@@ -35,7 +35,7 @@ Use `FILE_NEW` only when creating a new file. Include the complete file content.
 
 This is a specialized patch format, with the markers defined below (we do not have `***` markers with this patch format)
 
-```text
+```
 [[[FILE_PATCH file_path="path/to/file"]]]
 @@
 -old content
@@ -70,38 +70,83 @@ Every hunk body line must begin with exactly one prefix:
 | Prefix | Meaning                                                            |
 | ------ | ------------------------------------------------------------------ |
 | ` `    | Unchanged context, surround to ground following or previous change |
-| `-`    | Removed line (when lot of consecutive lines, use `~` below)        |
-| `+`    | Added line                                                         |
-| `~`    | To remove consecutive lines within `-` (see below)                 |
+| `-`    | Removed line                                                        |
+| `+`    | Added line                                                          |
+| `~`    | Omitted middle portion of one large consecutive removal             |
 
 Context and removal lines must exactly match the original file, including indentation and whitespace.
 
 When replacing content, include the removed lines. Do not provide only the replacement.
 
-Important, when doing `-` for more than 6 lines, use the `~` when removing a large continuous block
+#### IMPORTANT: Compress Large Consecutive Removals With `~`
 
-Like this:
+When removing more than 6 consecutive lines, you **must use `~`** to omit the middle of the removed block.
+
+Do not emit every removed line when a large continuous section is being deleted or replaced. Keeping every line wastes output tokens and makes patches unnecessarily large.
+
+Include:
+
+- the first one or more removed lines needed to identify the start of the block
+- a single `~` line
+- the last one or more removed lines needed to identify the end of the block
+- the replacement content, when applicable
+
+Example:
 
 ```
 [[[FILE_PATCH file_path="path/to/file"]]]
 @@
--first to remove line
--second to remove line
+-first removed line
+-second removed line
 ~
--second-to-last to remove line
--last to remove line
+-second-to-last removed line
+-last removed line
 +replacement
 [[[/FILE_PATCH]]]
 ```
 
-- `~` may appear only between removal lines.
-- `~` represents one continuous removed region.
-- No context or addition lines may appear inside the omitted region.
-- Prefer it when removing more than four or five consecutive lines.
+Rules for `~`:
+
+- Use `~` whenever more than 6 consecutive lines are removed.
+- Prefer `~` even for removals of 5 or 6 lines when the surrounding anchors are unambiguous.
+- `~` represents only the omitted middle of one continuous removed region.
+- `~` must appear between `-` removal lines.
+- There must be at least one `-` line before and after `~`.
+- No context line, addition line, or second removal region may appear inside the omitted region.
+- Use only one `~` for each continuous removed block.
+- Do not use `~` for short removals where listing the removed lines is clearer.
+
+Incorrect for a large removal:
+
+```
+-old line 1
+-old line 2
+-old line 3
+-old line 4
+-old line 5
+-old line 6
+-old line 7
+-old line 8
+-old line 9
++replacement
+```
+
+Correct:
+
+```
+-old line 1
+-old line 2
+~
+-old line 8
+-old line 9
++replacement
+```
+
+Before emitting a `FILE_PATCH`, actively check every sequence of removed lines. If more than 6 consecutive `-` lines would be emitted, replace the middle of that sequence with `~`.
 
 ### FILE_APPEND - Append to the End of a File
 
-```text
+```
 [[[FILE_APPEND file_path="path/to/file"]]]
 _content to append_
 [[[/FILE_APPEND]]] <<<--- IMPORTANT: Always end FILE_APPEND with this end backet tag
@@ -126,19 +171,19 @@ Decision rule:
 
 ### FILE_COPY - Copy a File
 
-```text
+```
 [[[FILE_COPY from_path="source" to_path="destination" /]]]
 ```
 
 ### FILE_RENAME - Rename or Move a File
 
-```text
+```
 [[[FILE_RENAME from_path="source" to_path="destination" /]]]
 ```
 
 ### FILE_DELETE - Delete a File
 
-```text
+```
 [[[FILE_DELETE file_path="path/to/file" /]]]
 ```
 
@@ -157,13 +202,14 @@ Decision rule:
 - Preserve existing comments verbatim unless explicitly asked to change them.
 - Do not add trivial explanatory comments.
 - Patch context and anchors must exactly match the original file.
+- Use `~` to compress every removal of more than 6 consecutive lines.
 - Code-fence language identifiers are only syntax highlighting and are not part of the file content.
 - Think through all file changes before emitting the block.
 - The response must end immediately after `[[[/UDIFFX_FILE_CHANGES]]]`.
 
 ## Complete Example
 
-```text
+```
 [[[UDIFFX_FILE_CHANGES]]]
 [[[FILE_NEW file_path="src/hello.rs"]]]
 pub fn hello() {
@@ -212,10 +258,12 @@ Before returning, verify that:
 - each file has at most one `FILE_PATCH`
 - pure end-of-file additions use `FILE_APPEND`
 - every patch hunk line has a valid prefix
+- every removal of more than 6 consecutive lines uses `~`
+- every `~` has at least one removal line before and after it
 - the last file directive is fully closed
 - the final non-whitespace line is exactly:
 
-```text
+```
 [[[/UDIFFX_FILE_CHANGES]]]
 ```
 
@@ -225,7 +273,9 @@ Block directives use slash-style closing tags.
 
 Correct:
 
+```
 [[[/UDIFFX_FILE_CHANGES]]]
 [[[/FILE_NEW]]]
 [[[/FILE_PATCH]]]
 [[[/FILE_APPEND]]]
+```
