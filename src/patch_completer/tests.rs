@@ -1828,12 +1828,7 @@ fn test_patch_completer_complete_removes_final_malformed_wrapper_terminators() -
 		assert!(!completed.contains(terminator));
 		assert!(has_actionable_hunks(&patch));
 		assert_eq!(hunks.len(), 1);
-		assert!(
-			!hunks
-				.first()
-				.ok_or("Expected a completed raw hunk")?
-				.contains(terminator)
-		);
+		assert!(!hunks.first().ok_or("Expected a completed raw hunk")?.contains(terminator));
 		assert_eq!(tier, Some(MatchTier::Strict));
 	}
 
