@@ -100,7 +100,9 @@ pub(super) fn collect_raw_hunks(patch_text: &str) -> Vec<Vec<&str>> {
 				if next_trimmed.starts_with("@@") {
 					break;
 				}
-				hunk_lines.push(lines.next().unwrap());
+				if let Some(line) = lines.next() {
+					hunk_lines.push(line);
+				}
 			}
 
 			// Strip trailing empty lines that lack a valid diff prefix.
@@ -147,11 +149,13 @@ pub(super) fn collect_raw_hunks_sanitized(patch_text: &str) -> Vec<Vec<&str>> {
 				if next_trimmed.starts_with(U_HUNK_DELIM) {
 					break;
 				}
-				let next_line = lines.next().unwrap();
+				let next_line = lines.next();
 				if is_wrapper_meta_line(next_trimmed) {
 					continue;
 				}
-				hunk_lines.push(next_line);
+				if let Some(next_line) = next_line {
+					hunk_lines.push(next_line);
+				}
 			}
 
 			// Strip trailing empty lines that lack a valid diff prefix.

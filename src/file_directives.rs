@@ -117,8 +117,9 @@ mod tests {
 		// -- Check
 		assert_eq!(content.content, "");
 		assert!(content.code_fence.is_some());
-		assert_eq!(content.code_fence.as_ref().unwrap().start, "```");
-		assert_eq!(content.code_fence.as_ref().unwrap().end, "```");
+		let code_fence = content.code_fence.as_ref().ok_or("should have code_fence")?;
+		assert_eq!(code_fence.start, "```");
+		assert_eq!(code_fence.end, "```");
 
 		Ok(())
 	}

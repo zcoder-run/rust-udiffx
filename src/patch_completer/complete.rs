@@ -294,7 +294,10 @@ fn expand_tilde_ranges(
 		// Check if this is a tilde line
 		if let Some(range) = tilde_ranges.iter().find(|r| r.tilde_hl_index == hl_idx) {
 			// Find the last matched orig index from the top anchors
-			let last_top_anchor_hl = *range.top_anchor_hl_indices.last().unwrap();
+			let Some(&last_top_anchor_hl) = range.top_anchor_hl_indices.last() else {
+				hl_idx += 1;
+				continue;
+			};
 			let last_top_orig_idx = matched_orig_indices
 				.iter()
 				.find(|(h, _)| *h == last_top_anchor_hl)
@@ -306,7 +309,10 @@ fn expand_tilde_ranges(
 				})?;
 
 			// Find the first matched orig index from the bottom anchors
-			let first_bottom_anchor_hl = *range.bottom_anchor_hl_indices.first().unwrap();
+			let Some(&first_bottom_anchor_hl) = range.bottom_anchor_hl_indices.first() else {
+				hl_idx += 1;
+				continue;
+			};
 			let first_bottom_orig_idx = matched_orig_indices
 				.iter()
 				.find(|(h, _)| *h == first_bottom_anchor_hl)
@@ -476,10 +482,13 @@ fn search_candidates_for_tier(
 					for search_idx in target_idx..orig_lines.len() {
 						if line_matches(orig_lines[search_idx], p_line, tier) {
 							// Check that remaining bottom anchors also match consecutively
-							let range = tilde_ranges
+							let Some(range) = tilde_ranges
 								.iter()
 								.find(|r| r.bottom_anchor_hl_indices.first() == Some(&hl_idx))
-								.unwrap();
+							else {
+								matches = false;
+								break;
+							};
 							let mut all_match = true;
 							for (offset, &ba_hl_idx) in range.bottom_anchor_hl_indices.iter().enumerate() {
 								let ba_orig_idx = search_idx + offset;
@@ -871,7 +880,7 @@ fn compute_hunk_bounds(
 		if let Some((_, orig_idx)) = matched_orig_indices.iter().find(|(h_idx, _)| *h_idx == hl_idx) {
 			// Emit skipped blanks before this match to maintain alignment
 			for &s_idx in &skipped_blank_orig_indices {
-				if s_idx < *orig_idx && (last_orig_idx.is_none() || s_idx > last_orig_idx.unwrap()) {
+				if s_idx < *orig_idx && last_orig_idx.is_none_or(|last| s_idx > last) {
 					final_hunk_lines.push(format!(" {}", orig_lines[s_idx]));
 					old_count += 1;
 					new_count += 1;
